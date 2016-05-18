@@ -1,0 +1,108 @@
+#!/bin/bash
+
+source /usr/share/portage/config/make.globals
+source /etc/portage/make.conf
+
+CONFIG_FILES=(
+    /usr/share/system-update/system-update.conf
+    /etc/system-update.conf
+)
+
+for config in "${CONFIG_FILES[@]}"
+do
+    [[ -f "$config" ]] && { source "$config" || exit; }
+done
+
+while (($#))
+do
+    case "$1" in
+        --sync) SYNC=true ;;
+        --clean) CLEAN=true ;;
+	--bootmgr) BOOTMGR=true ;;
+        --no-sync) SYNC=false ;;
+        --no-clean) CLEAN=false ;;
+	--no-bootmgr) BOOTMGR=false ;;
+        *) EMERGE_OPTS+=( "$1" ) ;;
+    esac
+    shift
+done
+
+if (( $EUID ))
+then
+    EMERGE_OPTS+=( --pretend );
+    SYNC=false
+    CLEAN=false
+    BOOTMGR=false
+fi
+
+domerge()
+{
+    local stage stageOpts stageAtoms
+    for stage in "$@"
+    do
+        stageOpts="EMERGE_${stage^^}_OPTS[@]"
+        stageAtoms="EMERGE_${stage^^}_ATOMS[@]"
+        emerge "${EMERGE_OPTS[@]}" "${!stageOpts}" "${!stageAtoms}" || return
+    done
+}
+
+set_gcc()
+{
+    local PROFILE="$(
+    gcc-config -l -C |
+    cut -d ' ' -f3 |
+    grep "^$CHOST-" |
+    sort -rn |
+    head -n1
+    )"
+    gcc-config "$PROFILE"
+}
+
+if $SYNC
+then
+    timestamp="$(date +%s)"
+    for repo in $(portageq get_repos /)
+    do
+        repopath="$(portageq get_repo_path / "$repo")"
+	repotime="$timestamp"
+        if [[ -r "$repopath/.git/FETCH_HEAD" ]]
+	then
+	    repotime="$(date -r "$repopath/.git/FETCH_HEAD" +%s)"
+	elif [[ -r "$repopath/metadata/timestamp.chk" ]]
+	then
+            repotime="$(date -f "$repopath/metadata/timestamp.chk" +%s)"
+	fi
+        if (( timestamp > repotime + SYNC_SEC ))
+        then
+            emaint sync -r "$repo" || exit $?
+        fi
+    done
+fi &&
+domerge update &&
+# make sure the newest gcc is used
+set_gcc &&
+domerge clean rebuild
+
+RETURN="$?"
+
+if $BOOTMGR
+then
+    hash grub2-mkconfig 2>/dev/null && $pretend grub2-mkconfig -o /boot/grub/grub.cfg
+    hash efiboot-sync 2>/dev/null && $pretend efiboot-sync
+fi
+
+
+echo
+if [[ $RETURN -eq 0 ]]
+then
+    if $CLEAN
+    then
+        eclean-dist $pretend --deep
+        eclean-pkg $pretend --deep
+    fi
+    echo
+    echo "Success"
+else
+    echo "Failed with code: $RETURN"
+fi
+exit "$RETURN"
