@@ -101,7 +101,8 @@ fi &&
 domerge update &&
 # make sure the newest gcc is used
 set_gcc &&
-domerge clean rebuild
+domerge clean rebuild &&
+cfg-update -au
 
 RETURN="$?"
 
