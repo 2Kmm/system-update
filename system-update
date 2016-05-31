@@ -81,6 +81,7 @@ set_gcc()
 if $SYNC
 then
     timestamp="$(date +%s)"
+    repos=()
     for repo in $(portageq get_repos /)
     do
         repopath="$(portageq get_repo_path / "$repo")"
@@ -94,9 +95,10 @@ then
         fi
         if (( timestamp > repotime + SYNC_SEC ))
         then
-            emaint sync -r "$repo" || exit $?
+            repos+=( "$repo" )
         fi
     done
+    emaint sync -r "${repos[*]}"
 fi &&
 domerge update &&
 # make sure the newest gcc is used
