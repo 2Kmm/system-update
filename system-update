@@ -103,7 +103,10 @@ then
             repos+=( "$repo" )
         fi
     done
-    emaint sync -r "${repos[*]}"
+    if (( ${#repos[*]} ))
+    then
+        emaint sync -r "${repos[*]}"
+    fi
 fi &&
 domerge update &&
 # make sure the newest gcc is used
