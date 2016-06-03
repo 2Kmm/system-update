@@ -86,9 +86,14 @@ then
     do
         repopath="$(portageq get_repo_path / "$repo")"
         repotime="$timestamp"
-        if [[ -r "$repopath/.git/index" ]]
+        if [[ -d "$repopath/.git" ]]
         then
-            repotime="$(date -r "$repopath/.git/index" +%s)"
+            if [[ -r "$repopath/.git/FETCH_HEAD" ]]
+            then
+                repotime="$(date -r "$repopath/.git/FETCH_HEAD" +%s)"
+            else
+                repotime=0
+            fi
         elif [[ -r "$repopath/metadata/timestamp.chk" ]]
         then
             repotime="$(date -f "$repopath/metadata/timestamp.chk" +%s)"
