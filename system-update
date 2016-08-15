@@ -118,6 +118,7 @@ RETURN="$?"
 
 if $BOOTMGR
 then
+    hash grub-mkconfig 2>/dev/null && $pretend grub-mkconfig -o /boot/grub/grub.cfg
     hash grub2-mkconfig 2>/dev/null && $pretend grub2-mkconfig -o /boot/grub/grub.cfg
     hash efiboot-sync 2>/dev/null && $pretend efiboot-sync
 fi
