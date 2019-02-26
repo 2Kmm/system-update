@@ -60,7 +60,7 @@ domerge()
         stagePreCmds="PRE_${stage^^}_CMDS[@]"
         for cmd in "${!stagePreCmds}"
         do
-            "$cmd" || return
+            $cmd || return
         done
         stageOpts="EMERGE_${stage^^}_OPTS[@]"
         stageAtoms="EMERGE_${stage^^}_ATOMS[@]"
@@ -68,7 +68,7 @@ domerge()
         stagePostCmds="POST_${stage^^}_CMDS[@]"
         for cmd in "${!stagePostCmds}"
         do
-            "$cmd" || return
+            $cmd || return
         done
     done
 }
