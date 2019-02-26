@@ -54,26 +54,23 @@ fi
 
 domerge()
 {
-    local stage stageOpts stageAtoms
+    local stage stageOpts stageAtoms stagePreCmds stagePostCmds
     for stage in "$@"
     do
+        stagePreCmds="PRE_${stage^^}_CMDS[@]"
+        for cmd in "${!stagePreCmds}"
+        do
+            "$cmd" || return
+        done
         stageOpts="EMERGE_${stage^^}_OPTS[@]"
         stageAtoms="EMERGE_${stage^^}_ATOMS[@]"
         emerge "${EMERGE_OPTS[@]}" "${!stageOpts}" "${!stageAtoms}" || return
+        stagePostCmds="POST_${stage^^}_CMDS[@]"
+        for cmd in "${!stagePostCmds}"
+        do
+            "$cmd" || return
+        done
     done
-}
-
-set_gcc()
-{
-    local CHOST="$(portageq envvar CHOST)"
-    local PROFILE="$(
-    gcc-config -l -C |
-    cut -d ' ' -f3 |
-    grep "^$CHOST-" |
-    sort -rn |
-    head -n1
-    )"
-    gcc-config "$PROFILE"
 }
 
 if $SYNC
@@ -106,10 +103,7 @@ then
         emaint sync -r "${repos[*]}"
     fi
 fi &&
-domerge update &&
-# make sure the newest gcc is used
-set_gcc &&
-domerge clean rebuild &&
+domerge update clean rebuild &&
 cfg-update -au
 
 RETURN="$?"
