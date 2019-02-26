@@ -103,7 +103,7 @@ then
         emaint sync -r "${repos[*]}"
     fi
 fi &&
-domerge update clean rebuild &&
+domerge "${STAGES[@]}" &&
 cfg-update -au
 
 RETURN="$?"
