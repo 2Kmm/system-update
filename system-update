@@ -34,9 +34,11 @@ while (($#))
 do
     case "$1" in
         --sync) SYNC=true ;;
+        --update) UPDATE=true ;;
         --clean) CLEAN=true ;;
         --bootmgr) BOOTMGR=true ;;
         --no-sync) SYNC=false ;;
+        --no-update) UPDATE=false ;;
         --no-clean) CLEAN=false ;;
         --no-bootmgr) BOOTMGR=false ;;
         *) EMERGE_OPTS+=( "$1" ) ;;
@@ -103,7 +105,10 @@ then
         emaint sync -r "${repos[*]}"
     fi
 fi &&
-domerge "${STAGES[@]}"
+if $UPDATE
+then
+    domerge "${STAGES[@]}"
+fi
 
 RETURN="$?"
 
