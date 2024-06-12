@@ -88,6 +88,9 @@ then
             if [[ -r "$repopath/.git/FETCH_HEAD" ]]
             then
                 repotime="$(date -r "$repopath/.git/FETCH_HEAD" +%s)"
+            elif [[ -r "$repopath/.git/HEAD" ]]
+            then
+                repotime="$(date -r "$repopath/.git/HEAD" +%s)"
             else
                 repotime=0
             fi
