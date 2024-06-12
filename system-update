@@ -75,7 +75,7 @@ domerge()
     done
 }
 
-if $SYNC
+if [[ $SYNC == true ]]
 then
     timestamp="$(date +%s)"
     repos=()
@@ -108,14 +108,14 @@ then
         emaint sync -r "${repos[*]}"
     fi
 fi &&
-if $UPDATE
+if [[ $UPDATE == true ]]
 then
     domerge "${STAGES[@]}"
 fi
 
 RETURN="$?"
 
-if $BOOTMGR
+if [[ $BOOTMGR == true ]]
 then
     hash grub-mkconfig 2>/dev/null && $pretend grub-mkconfig -o /boot/grub/grub.cfg
     hash grub2-mkconfig 2>/dev/null && $pretend grub2-mkconfig -o /boot/grub/grub.cfg
@@ -126,7 +126,7 @@ fi
 echo
 if [[ $RETURN -eq 0 ]]
 then
-    if $CLEAN
+    if [[ $CLEAN == true ]]
     then
         eclean-dist $pretend --deep
         eclean-pkg $pretend --deep
