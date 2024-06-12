@@ -35,10 +35,10 @@ do
     case "$1" in
         --sync) SYNC=true ;;
         --clean) CLEAN=true ;;
-	--bootmgr) BOOTMGR=true ;;
+        --bootmgr) BOOTMGR=true ;;
         --no-sync) SYNC=false ;;
         --no-clean) CLEAN=false ;;
-	--no-bootmgr) BOOTMGR=false ;;
+        --no-bootmgr) BOOTMGR=false ;;
         *) EMERGE_OPTS+=( "$1" ) ;;
     esac
     shift
